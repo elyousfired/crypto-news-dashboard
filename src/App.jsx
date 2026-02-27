@@ -11,7 +11,8 @@ import {
   ChevronRight,
   TrendingUp,
   MoreHorizontal,
-  Info
+  Info,
+  Zap
 } from 'lucide-react';
 import { getAggregatedNews, getMarketData } from './services/newsService';
 
@@ -139,29 +140,67 @@ function App() {
 
       {/* Right Panel - Advanced Intelligence */}
       <aside className="right-panel">
+        <h2 className="text-xs text-bold text-muted" style={{ textTransform: 'uppercase', marginBottom: '1.25rem' }}>Global Intelligence</h2>
+
+        <div className="card" style={{ padding: '1.25rem' }}>
+          <h3 className="text-sm" style={{ marginBottom: '1rem' }}>Top Sectors by Performance</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <SectorRow name="AI Agents" change={+12.4} />
+            <SectorRow name="DeFi 2.0" change={+3.1} />
+            <SectorRow name="L2 Scaling" change={-1.2} />
+            <SectorRow name="RWA" change={+0.5} />
+          </div>
+        </div>
+
+        <div className="card" style={{ padding: '1.25rem' }}>
+          <h3 className="text-sm" style={{ marginBottom: '1rem' }}>Active Intel Sources</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+            {['CryptoPanic', 'Messari', 'Blockworks', 'TheBlock', 'NewsAPI', 'Reuters'].map(s => (
+              <div key={s} className="text-xs" style={{ padding: '6px', background: 'var(--bg-tertiary)', borderRadius: '2px', textAlign: 'center' }}>{s}</div>
+            ))}
+          </div>
+        </div>
+
+        <div className="card" style={{ padding: '1.25rem', borderColor: 'var(--accent-blue)', background: 'rgba(0,122,255,0.02)' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.75rem', color: 'var(--accent-blue)' }}>
+            <Zap size={14} />
+            <span className="text-xs text-bold">PRO SIGNAL</span>
+          </div>
+          <p className="text-xs" style={{ lineHeight: 1.5 }}>Whale movement detected in $RENDER. Large buy order filled on Binance Spot (+ $4.2M).</p>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function MenuItem({ icon, label, active, onClick }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
         gap: '0.75rem',
         padding: '8px 12px',
         borderRadius: '4px',
         cursor: 'pointer',
         background: active ? 'rgba(0, 122, 255, 0.1)' : 'transparent',
         color: active ? 'var(--accent-blue)' : 'var(--text-secondary)',
-    }}>
-        {icon}
-        <span className="text-sm text-bold">{label}</span>
+      }}
+    >
+      {icon}
+      <span className="text-sm text-bold">{label}</span>
     </div>
   );
 }
 
-function ProgessBar({ label, value, color }) {
+function SectorRow({ name, change }) {
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', marginBottom: '4px' }}>
-        <span>{label}</span>
-        <span>{value}%</span>
-      </div>
-      <div style={{ width: '100%', height: '4px', background: 'var(--bg-tertiary)', borderRadius: '2px' }}>
-        <div style={{ width: `${value}%`, height: '100%', background: color, borderRadius: '2px' }}></div>
-      </div>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span className="text-sm">{name}</span>
+      <span className="text-xs text-bold" style={{ color: change > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
+        {change > 0 ? '▲' : '▼'} {Math.abs(change)}%
+      </span>
     </div>
   );
 }
