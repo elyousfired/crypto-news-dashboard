@@ -1,192 +1,191 @@
-import React, { useState } from 'react';
-import { 
-  TrendingUp, 
-  Newspaper, 
-  Layers, 
-  Zap, 
-  Search, 
-  Bell, 
-  Plus,
+import React, { useState, useEffect } from 'react';
+import {
+  BarChart3,
+  Newspaper,
+  Layers,
+  Search,
+  Bell,
   ArrowUpRight,
   Clock,
-  ExternalLink
+  ExternalLink,
+  ChevronRight,
+  TrendingUp,
+  MoreHorizontal,
+  Info
 } from 'lucide-react';
-
-const TOKENS = [
-  { id: 'btc', name: 'Bitcoin', symbol: 'BTC', color: 'var(--accent-btc)', layer: 'L1' },
-  { id: 'eth', name: 'Ethereum', symbol: 'ETH', color: 'var(--accent-eth)', layer: 'L1' },
-  { id: 'sol', name: 'Solana', symbol: 'SOL', color: 'var(--accent-sol)', layer: 'L1' },
-  { id: 'bnb', name: 'BNB', symbol: 'BNB', color: 'var(--accent-bnb)', layer: 'L1' },
-];
-
-const LAYERS = ['L0', 'L1', 'L2'];
-
-const INITIAL_NEWS = [
-  {
-    id: 1,
-    token: 'BTC',
-    title: 'Bitcoin Hits New All-Time High Above $100k',
-    summary: 'Institutional demand continues to drive Bitcoin prices as ETFs see record inflows.',
-    time: '2h ago',
-    category: 'L1'
-  },
-  {
-    id: 2,
-    token: 'SOL',
-    title: 'Solana Network Hits Record Transaction Throughput',
-    summary: 'The network handled over 65,000 TPS during the peak trading session today.',
-    time: '4h ago',
-    category: 'L1'
-  },
-  {
-    id: 3,
-    token: 'ETH',
-    title: 'Ethereum Layer 2 Usage Surges 300% in Q1',
-    summary: 'Arbitrum and Optimism leading the charge in the L2 scaling summer.',
-    time: '6h ago',
-    category: 'L2'
-  }
-];
+import { getAggregatedNews, getMarketData } from './services/newsService';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('All');
-  const [selectedLayer, setSelectedLayer] = useState('All');
+  const [news, setNews] = useState([]);
+  const [marketData, setMarketData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState({ currency: null, sentiment: null });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const [newsData, prices] = await Promise.all([
+        getAggregatedNews(filter),
+        getMarketData()
+      ]);
+      setNews(newsData);
+      setMarketData(prices);
+      setLoading(false);
+    };
+    fetchData();
+  }, [filter]);
 
   return (
-    <div className="dashboard-container">
-      {/* Sidebar */}
-      <aside className="glass-card" style={{ padding: '1.5rem', height: 'max-content' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
-          <div style={{ background: 'var(--accent-purple)', padding: '8px', borderRadius: '12px' }}>
-            <TrendingUp size={20} />
+    <div className="app-layout">
+      {/* Sidebar - Navigation */}
+      <aside className="sidebar">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2.5rem' }}>
+          <div style={{ background: 'var(--accent-blue)', color: 'white', padding: '4px', borderRadius: '4px' }}>
+            <BarChart3 size={20} />
           </div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>CryptoHub</h2>
+          <span className="text-bold" style={{ fontSize: '1.25rem' }}>MESSARI</span>
+          <span style={{ fontSize: '10px', background: 'var(--bg-tertiary)', padding: '2px 4px' }}>PRO</span>
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '0.05em' }}>Categories</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <NavItem icon={<Newspaper size={18} />} label="All News" active={activeTab === 'All'} onClick={() => setActiveTab('All')} />
-              <NavItem icon={<Zap size={18} />} label="Market Trends" active={activeTab === 'Market'} onClick={() => setActiveTab('Market')} />
+            <div className="text-xs text-muted text-bold" style={{ textTransform: 'uppercase', marginBottom: '0.75rem' }}>Intelligence</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <MenuItem icon={<Newspaper size={16} />} label="Curated News" active />
+              <MenuItem icon={<Layers size={16} />} label="Layer Overviews" />
+              <MenuItem icon={<TrendingUp size={16} />} label="Market Indicators" />
             </div>
           </div>
 
           <div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '0.05em' }}>Layers</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              {['All', ...LAYERS].map(layer => (
-                <button 
-                  key={layer}
-                  onClick={() => setSelectedLayer(layer)}
-                  className="glass-card"
-                  style={{ 
-                    padding: '8px 12px', 
-                    fontSize: '0.75rem', 
-                    cursor: 'pointer',
-                    background: selectedLayer === layer ? 'var(--accent-purple)' : 'var(--glass-bg)',
-                    borderColor: selectedLayer === layer ? 'var(--accent-purple)' : 'var(--glass-border)'
-                  }}
-                >
-                  {layer}
-                </button>
+            <div className="text-xs text-muted text-bold" style={{ textTransform: 'uppercase', marginBottom: '0.75rem' }}>Watchlists</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              {['BTC', 'ETH', 'SOL'].map(coin => (
+                <div key={coin} className="text-sm" style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{coin}</span>
+                  <ChevronRight size={14} className="text-muted" />
+                </div>
               ))}
             </div>
           </div>
         </nav>
       </aside>
 
-      {/* Main Content */}
-      <main style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        {/* Header Stats */}
-        <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-          {TOKENS.map(token => (
-            <div key={token.id} className={`glass-card glow-${token.id}`} style={{ padding: '1rem', minWidth: '160px', flex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{token.symbol}</span>
-                <TrendingUp size={16} color={token.color} />
-              </div>
-              <div style={{ fontSize: '1.125rem', fontWeight: 700 }}>$---.--</div>
-              <div style={{ fontSize: '0.75rem', color: '#14f195', marginTop: '0.25rem' }}>+5.2%</div>
+      {/* Main Content - News Feed */}
+      <main className="main-content">
+        <div className="ticker-strip" style={{ margin: '-1.5rem -1.5rem 1.5rem -1.5rem' }}>
+          {marketData.map(coin => (
+            <div key={coin.symbol} style={{ display: 'flex', gap: '0.5rem' }}>
+              <span className="text-muted">{coin.symbol}</span>
+              <span>${coin.price.toLocaleString()}</span>
+              <span style={{ color: coin.change > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
+                {coin.change > 0 ? '+' : ''}{coin.change}%
+              </span>
             </div>
           ))}
         </div>
 
-        {/* Search & Actions */}
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <div className="glass-card" style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 1rem' }}>
-            <Search size={18} color="var(--text-secondary)" />
-            <input 
-              type="text" 
-              placeholder="Search projects, news, layers..." 
-              style={{ 
-                background: 'transparent', 
-                border: 'none', 
-                outline: 'none', 
-                color: 'white', 
-                padding: '12px',
-                width: '100%',
-                fontSize: '0.875rem'
-              }} 
-            />
+        <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h1 style={{ fontSize: '1.5rem' }}>Intelligence Feed</h1>
+            <p className="text-sm text-muted">A curated stream of institutional-grade crypto insights.</p>
           </div>
-          <button className="glass-card" style={{ padding: '12px', cursor: 'pointer' }}><Bell size={20} /></button>
-          <button className="glass-card" style={{ padding: '12px', cursor: 'pointer', background: 'var(--accent-purple)', borderColor: 'var(--accent-purple)' }}><Plus size={20} /></button>
-        </div>
-
-        {/* News Feed */}
-        <section style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Hot News</h3>
-            <button style={{ background: 'transparent', border: 'none', color: 'var(--accent-purple)', cursor: 'pointer', fontSize: '0.875rem' }}>View All</button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button className="card" style={{ padding: '8px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Search size={14} /> Search
+            </button>
+            <button className="card" style={{ padding: '8px 12px', fontSize: '0.75rem', background: 'var(--accent-blue)', color: 'white', border: 'none' }}>
+              Filter
+            </button>
           </div>
+        </header>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {INITIAL_NEWS.filter(n => selectedLayer === 'All' || n.category === selectedLayer).map(item => (
-              <div key={item.id} className="glass-card" style={{ padding: '1.5rem', display: 'flex', gap: '1.5rem' }}>
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span className="token-tag" style={{ border: '1px solid var(--accent-purple)', color: 'var(--accent-purple)' }}>{item.token}</span>
-                      <span className="token-tag" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-secondary)' }}>{item.category}</span>
-                    </div>
-                    <h4 style={{ fontSize: '1.125rem', fontWeight: 600, lineHeight: 1.4 }}>{item.title}</h4>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.6 }}>{item.summary}</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Clock size={12} /> {item.time}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}><ExternalLink size={12} /> Source</div>
-                    </div>
-                 </div>
-                 <div style={{ width: '120px', height: '100px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Newspaper size={40} opacity={0.2} />
-                 </div>
+        <section>
+          {loading ? (
+            <div className="text-muted text-sm">Loading intelligence...</div>
+          ) : (
+            news.map(item => (
+              <div key={item.id} className="news-item">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <span className={`sentiment-tag sentiment-${item.sentiment}`}>{item.sentiment}</span>
+                    <span className="text-xs text-bold" style={{ color: 'var(--accent-blue)' }}>{item.currencies.join(', ')}</span>
+                  </div>
+                  <span className="text-xs text-muted">{new Date(item.published_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <h3 className="text-sm" style={{ marginBottom: '0.5rem', fontWeight: 700 }}>{item.title}</h3>
+                <p className="text-xs text-muted" style={{ marginBottom: '0.75rem' }}>{item.summary}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'var(--bg-tertiary)', fontSize: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{item.source_name[0]}</div>
+                    <span className="text-xs text-muted">{item.source_name}</span>
+                  </div>
+                  <ExternalLink size={12} className="text-muted" style={{ cursor: 'pointer' }} />
+                </div>
               </div>
-            ))}
-          </div>
+            ))
+          )}
         </section>
       </main>
+
+      {/* Right Panel - Context/Market Data */}
+      <aside className="right-panel">
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h2 className="text-sm text-bold" style={{ marginBottom: '1rem' }}>Asset Performance</h2>
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span className="text-sm">Dominance</span>
+              <Info size={14} className="text-muted" />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <ProgessBar label="BTC" value={54.2} color="var(--accent-gold)" />
+              <ProgessBar label="ETH" value={18.5} color="#627eea" />
+              <ProgessBar label="Others" value={27.3} color="var(--text-secondary)" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-sm text-bold" style={{ marginBottom: '1rem' }}>Trending Topics</h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {['Staking', 'L2 Summer', 'Halving', 'AI Agents', 'SEC', 'ETFs'].map(tag => (
+              <span key={tag} className="text-xs" style={{ padding: '4px 8px', border: '1px solid var(--border-color)', borderRadius: '2px' }}>#{tag}</span>
+            ))}
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
 
-function NavItem({ icon, label, active, onClick }) {
+function MenuItem({ icon, label, active }) {
   return (
-    <div 
-      onClick={onClick}
-      style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: '0.75rem', 
-        padding: '12px 16px', 
-        borderRadius: '12px',
-        cursor: 'pointer',
-        background: active ? 'rgba(153, 69, 255, 0.1)' : 'transparent',
-        color: active ? 'var(--accent-purple)' : 'var(--text-secondary)',
-        transition: 'all 0.2s'
-      }}
-      className="nav-item-hover"
-    >
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.75rem',
+      padding: '8px 12px',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      background: active ? 'rgba(0, 122, 255, 0.1)' : 'transparent',
+      color: active ? 'var(--accent-blue)' : 'var(--text-secondary)',
+    }}>
       {icon}
-      <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{label}</span>
+      <span className="text-sm text-bold">{label}</span>
+    </div>
+  );
+}
+
+function ProgessBar({ label, value, color }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', marginBottom: '4px' }}>
+        <span>{label}</span>
+        <span>{value}%</span>
+      </div>
+      <div style={{ width: '100%', height: '4px', background: 'var(--bg-tertiary)', borderRadius: '2px' }}>
+        <div style={{ width: `${value}%`, height: '100%', background: color, borderRadius: '2px' }}></div>
+      </div>
     </div>
   );
 }
