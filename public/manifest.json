@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "CryptoHub News Dashboard",
+  "version": "1.0.0",
+  "description": "Premium Crypto Dashboard with news for BTC, ETH, SOL, BNB and L0/L1/L2 filtering.",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Open CryptoHub"
+  },
+  "permissions": ["storage"],
+  "icons": {
+    "16": "vite.svg",
+    "48": "vite.svg",
+    "128": "vite.svg"
+  }
+}
