@@ -19,13 +19,13 @@ function App() {
   const [news, setNews] = useState([]);
   const [marketData, setMarketData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState({ currency: null, sentiment: null });
+  const [selectedSector, setSelectedSector] = useState('All');
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       const [newsData, prices] = await Promise.all([
-        getAggregatedNews(filter),
+        getAggregatedNews({ sector: selectedSector === 'All' ? null : selectedSector }),
         getMarketData()
       ]);
       setNews(newsData);
@@ -33,37 +33,47 @@ function App() {
       setLoading(false);
     };
     fetchData();
-  }, [filter]);
+  }, [selectedSector]);
 
   return (
-    <div className="app-layout">
+    <div className="app-layout" style={{ gridTemplateColumns: 'var(--sidebar-width) 1fr 340px' }}>
       {/* Sidebar - Navigation */}
       <aside className="sidebar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2.5rem' }}>
           <div style={{ background: 'var(--accent-blue)', color: 'white', padding: '4px', borderRadius: '4px' }}>
-            <BarChart3 size={20} />
+            <TrendingUp size={20} />
           </div>
-          <span className="text-bold" style={{ fontSize: '1.25rem' }}>MESSARI</span>
-          <span style={{ fontSize: '10px', background: 'var(--bg-tertiary)', padding: '2px 4px' }}>PRO</span>
+          <span className="text-bold" style={{ fontSize: '1rem', letterSpacing: '0.05em' }}>MARKET STRUCTURE</span>
+          <span style={{ fontSize: '9px', background: 'var(--bg-tertiary)', padding: '2px 4px', borderRadius: '2px' }}>V2</span>
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div>
-            <div className="text-xs text-muted text-bold" style={{ textTransform: 'uppercase', marginBottom: '0.75rem' }}>Intelligence</div>
+            <div className="text-xs text-muted text-bold" style={{ textTransform: 'uppercase', marginBottom: '0.75rem' }}>Research</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              <MenuItem icon={<Newspaper size={16} />} label="Curated News" active />
-              <MenuItem icon={<Layers size={16} />} label="Layer Overviews" />
-              <MenuItem icon={<TrendingUp size={16} />} label="Market Indicators" />
+              <MenuItem icon={<BarChart3 size={16} />} label="Market Overview" active={selectedSector === 'All'} onClick={() => setSelectedSector('All')} />
+              <MenuItem icon={<Newspaper size={16} />} label="Intelligence Feed" />
+              <MenuItem icon={<Layers size={16} />} label="Ecosystems" />
             </div>
           </div>
 
           <div>
-            <div className="text-xs text-muted text-bold" style={{ textTransform: 'uppercase', marginBottom: '0.75rem' }}>Watchlists</div>
+            <div className="text-xs text-muted text-bold" style={{ textTransform: 'uppercase', marginBottom: '0.75rem' }}>Sectors</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              {['BTC', 'ETH', 'SOL'].map(coin => (
-                <div key={coin} className="text-sm" style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>{coin}</span>
-                  <ChevronRight size={14} className="text-muted" />
+              {['Infrastructure', 'Gaming', 'DeFi', 'AI', 'Regulatory'].map(sector => (
+                <div
+                  key={sector}
+                  className={`text-sm ${selectedSector === sector ? 'active-sector' : ''}`}
+                  onClick={() => setSelectedSector(sector)}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    color: selectedSector === sector ? 'var(--accent-blue)' : 'var(--text-secondary)',
+                    background: selectedSector === sector ? 'rgba(0,122,255,0.05)' : 'transparent'
+                  }}
+                >
+                  {sector}
                 </div>
               ))}
             </div>
@@ -71,107 +81,73 @@ function App() {
         </nav>
       </aside>
 
-      {/* Main Content - News Feed */}
+      {/* Main Content */}
       <main className="main-content">
         <div className="ticker-strip" style={{ margin: '-1.5rem -1.5rem 1.5rem -1.5rem' }}>
-          {marketData.map(coin => (
+          {marketData.slice(0, 5).map(coin => (
             <div key={coin.symbol} style={{ display: 'flex', gap: '0.5rem' }}>
               <span className="text-muted">{coin.symbol}</span>
               <span>${coin.price.toLocaleString()}</span>
-              <span style={{ color: coin.change > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                {coin.change > 0 ? '+' : ''}{coin.change}%
-              </span>
+              <span style={{ color: coin.change > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>{coin.change}%</span>
             </div>
           ))}
         </div>
 
-        <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 style={{ fontSize: '1.5rem' }}>Intelligence Feed</h1>
-            <p className="text-sm text-muted">A curated stream of institutional-grade crypto insights.</p>
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button className="card" style={{ padding: '8px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Search size={14} /> Search
-            </button>
-            <button className="card" style={{ padding: '8px 12px', fontSize: '0.75rem', background: 'var(--accent-blue)', color: 'white', border: 'none' }}>
-              Filter
-            </button>
-          </div>
+        <header style={{ marginBottom: '2rem' }}>
+          <h1 style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>Professional Intelligence Feed</h1>
+          <p className="text-xs text-muted">Aggregating 10+ sources for institutional alpha.</p>
         </header>
 
+        {/* Market Matrix Grid */}
+        <section style={{ marginBottom: '2.5rem' }}>
+          <div className="text-xs text-bold text-muted" style={{ marginBottom: '1rem', textTransform: 'uppercase' }}>Market Performance Matrix</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.75rem' }}>
+            {marketData.map(coin => (
+              <div key={coin.symbol} className="card" style={{ padding: '0.75rem', marginBottom: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span className="text-bold text-sm">{coin.symbol}</span>
+                  <span className="text-xs" style={{ color: coin.change > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>{coin.change}%</span>
+                </div>
+                <div style={{ fontSize: '1rem', fontWeight: 600 }}>${coin.price > 1000 ? coin.price.toLocaleString() : coin.price}</div>
+                <div className="text-xs text-muted" style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>MCap: {coin.cap}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section>
+          <div className="text-xs text-bold text-muted" style={{ marginBottom: '1rem', textTransform: 'uppercase' }}>Latest Intelligence Events</div>
           {loading ? (
-            <div className="text-muted text-sm">Loading intelligence...</div>
+            <div className="text-muted text-sm">Synchronizing data sources...</div>
           ) : (
             news.map(item => (
               <div key={item.id} className="news-item">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                    <span className={`sentiment-tag sentiment-${item.sentiment}`}>{item.sentiment}</span>
-                    <span className="text-xs text-bold" style={{ color: 'var(--accent-blue)' }}>{item.currencies.join(', ')}</span>
-                  </div>
-                  <span className="text-xs text-muted">{new Date(item.published_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <span className={`sentiment-tag sentiment-${item.sentiment}`}>{item.sentiment}</span>
+                  <span className="text-xs text-bold" style={{ color: 'var(--accent-blue)' }}>{item.currencies.join(', ')}</span>
+                  <span className="text-xs text-muted" style={{ marginLeft: 'auto' }}>{item.published_at.split('T')[1].slice(0, 5)}</span>
                 </div>
-                <h3 className="text-sm" style={{ marginBottom: '0.5rem', fontWeight: 700 }}>{item.title}</h3>
-                <p className="text-xs text-muted" style={{ marginBottom: '0.75rem' }}>{item.summary}</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'var(--bg-tertiary)', fontSize: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{item.source_name[0]}</div>
-                    <span className="text-xs text-muted">{item.source_name}</span>
-                  </div>
-                  <ExternalLink size={12} className="text-muted" style={{ cursor: 'pointer' }} />
-                </div>
+                <h3 className="text-sm" style={{ fontWeight: 700, marginBottom: '0.5rem' }}>{item.title}</h3>
+                <p className="text-xs text-muted">{item.summary}</p>
               </div>
             ))
           )}
         </section>
       </main>
 
-      {/* Right Panel - Context/Market Data */}
+      {/* Right Panel - Advanced Intelligence */}
       <aside className="right-panel">
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h2 className="text-sm text-bold" style={{ marginBottom: '1rem' }}>Asset Performance</h2>
-          <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <span className="text-sm">Dominance</span>
-              <Info size={14} className="text-muted" />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <ProgessBar label="BTC" value={54.2} color="var(--accent-gold)" />
-              <ProgessBar label="ETH" value={18.5} color="#627eea" />
-              <ProgessBar label="Others" value={27.3} color="var(--text-secondary)" />
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-sm text-bold" style={{ marginBottom: '1rem' }}>Trending Topics</h2>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-            {['Staking', 'L2 Summer', 'Halving', 'AI Agents', 'SEC', 'ETFs'].map(tag => (
-              <span key={tag} className="text-xs" style={{ padding: '4px 8px', border: '1px solid var(--border-color)', borderRadius: '2px' }}>#{tag}</span>
-            ))}
-          </div>
-        </div>
-      </aside>
-    </div>
-  );
-}
-
-function MenuItem({ icon, label, active }) {
-  return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.75rem',
-      padding: '8px 12px',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      background: active ? 'rgba(0, 122, 255, 0.1)' : 'transparent',
-      color: active ? 'var(--accent-blue)' : 'var(--text-secondary)',
+        gap: '0.75rem',
+        padding: '8px 12px',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        background: active ? 'rgba(0, 122, 255, 0.1)' : 'transparent',
+        color: active ? 'var(--accent-blue)' : 'var(--text-secondary)',
     }}>
-      {icon}
-      <span className="text-sm text-bold">{label}</span>
+        {icon}
+        <span className="text-sm text-bold">{label}</span>
     </div>
   );
 }

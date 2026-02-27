@@ -1,13 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "CryptoHub News Dashboard",
+  "name": "Market Structure Intelligence",
   "version": "1.0.0",
-  "description": "Premium Crypto Dashboard with news for BTC, ETH, SOL, BNB and L0/L1/L2 filtering.",
+  "description": "Institutional-grade Crypto Intelligence Dashboard.",
   "action": {
     "default_popup": "index.html",
     "default_title": "Open CryptoHub"
   },
-  "permissions": ["storage"],
+  "permissions": [
+    "storage"
+  ],
   "icons": {
     "16": "vite.svg",
     "48": "vite.svg",
